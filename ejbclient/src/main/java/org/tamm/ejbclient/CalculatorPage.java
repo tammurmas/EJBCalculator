@@ -1,7 +1,6 @@
 package org.tamm.ejbclient;
 
 import java.util.Arrays;
-import java.util.List;
 
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
@@ -13,9 +12,10 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.tamm.ejbbean.CalculatorServiceLocal;
+import org.tamm.entities.Operation;
+import org.tamm.entities.OperationType;
 
 public class CalculatorPage extends WebPage {
 
@@ -23,6 +23,7 @@ public class CalculatorPage extends WebPage {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private static OperationType selected = OperationType.ADD;
 
 	public CalculatorPage(final PageParameters parameters) {
 		super(parameters);
@@ -38,9 +39,7 @@ public class CalculatorPage extends WebPage {
     	private TextField<String> varField2;
     	private Label valueLabel;
     	
-    	private List<String> ops = Arrays.asList(new String[] { "add", "subtract", "multiply", "divide"});
-    	private String selected = "add";
-    	private DropDownChoice<String> operations;
+    	private DropDownChoice<OperationType> operations;
     	
     	public CalculatorForm(String id) {
     		super(id);
@@ -48,8 +47,8 @@ public class CalculatorPage extends WebPage {
     		varField1 = new TextField<String>("varField1", Model.of(""));
     		varField2 = new TextField<String>("varField2", Model.of(""));			
     		valueLabel = new Label("valueLabel", Model.of(""));
-    		operations = new DropDownChoice<String>("operations", new PropertyModel<String>(this, "selected"), ops);
-    			
+    		operations = new DropDownChoice<OperationType>("operations", new Model<OperationType>(selected), Arrays.asList(OperationType.values()));
+    		
     		add(varField1);
     		add(varField2);
     		add(valueLabel);
@@ -57,20 +56,22 @@ public class CalculatorPage extends WebPage {
     	}
 
     	public final void onSubmit() {
-    		long var1, var2;
-    		String op;
+    		double var1, var2;
+    		OperationType op_type;
     		try
     		{
     			var1 =  parseValue((String)varField1.getDefaultModelObject());
     			var2 =  parseValue((String)varField2.getDefaultModelObject());
-    			op = operations.getDefaultModelObjectAsString();
+    			op_type = (OperationType) operations.getDefaultModelObject();
     			
-    			valueLabel.setDefaultModelObject("The result is: "+calculate(var1, var2, op));
+    			Operation op = new Operation(var1, var2, op_type);
+    			
+    			valueLabel.setDefaultModelObject("The result is: "+calculate(op));
     		}
     		catch(NumberFormatException e)
     		{
     			e.printStackTrace();
-    			valueLabel.setDefaultModelObject("Provide real numbers!");
+    			valueLabel.setDefaultModelObject("Provide integers!");
     		}
     		catch(EJBException e)
     		{
@@ -78,26 +79,26 @@ public class CalculatorPage extends WebPage {
     		}
     	}
     	
-    	private Number calculate(long var1, long var2, String op) throws EJBException
+    	private Number calculate(Operation op) throws EJBException
     	{
     		CalculatorServiceLocal calculator = lookupEJB();
-    		switch (op) {
-			case "add":
-				return calculator.add(var1, var2);
-			case "subtract":
-				return calculator.subtract(var1, var2);
-			case "multiply":
-				return calculator.multiply(var1, var2);
-			case "divide":
-				return calculator.divide(var1, var2);
+    		switch (op.getType()) {
+			case ADD:
+				return calculator.add(op);
+			case SUBTRACT:
+				return calculator.subtract(op);
+			case MULTIPLY:
+				return calculator.multiply(op);
+			case DIVIDE:
+				return calculator.divide(op);
 			default:
 				return null;
 			}
     	}
     	
-    	private long parseValue(String value) throws NumberFormatException
+    	private double parseValue(String value) throws NumberFormatException
     	{
-    		return Long.parseLong(value);
+    		return Double.parseDouble(value);
     	}
     	
     	private CalculatorServiceLocal lookupEJB()
