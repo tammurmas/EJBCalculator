@@ -10,7 +10,9 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.tamm.ejbbean.CalculatorServiceLocal;
@@ -38,17 +40,20 @@ public class CalculatorPage extends WebPage {
 		private TextField<String> varField1;
     	private TextField<String> varField2;
     	private Label valueLabel;
+    	private FeedbackPanel feedbackPanel;
     	
     	private DropDownChoice<OperationType> operations;
     	
     	public CalculatorForm(String id) {
     		super(id);
     			
-    		varField1 = new TextField<String>("varField1", Model.of(""));
-    		varField2 = new TextField<String>("varField2", Model.of(""));			
+    		varField1 = new RequiredTextField<String>("varField1", Model.of(""));
+    		varField2 = new RequiredTextField<String>("varField2", Model.of(""));			
     		valueLabel = new Label("valueLabel", Model.of(""));
     		operations = new DropDownChoice<OperationType>("operations", new Model<OperationType>(selected), Arrays.asList(OperationType.values()));
-    		
+    		feedbackPanel = new FeedbackPanel("feedback");
+            
+    		add(feedbackPanel);
     		add(varField1);
     		add(varField2);
     		add(valueLabel);
@@ -71,11 +76,11 @@ public class CalculatorPage extends WebPage {
     		catch(NumberFormatException e)
     		{
     			e.printStackTrace();
-    			valueLabel.setDefaultModelObject("Provide integers!");
+    			feedbackPanel.error("Variables have to be numeric values!");
     		}
     		catch(EJBException e)
     		{
-    			valueLabel.setDefaultModelObject(e.getMessage());
+    			feedbackPanel.error(e.getMessage());
     		}
     	}
     	

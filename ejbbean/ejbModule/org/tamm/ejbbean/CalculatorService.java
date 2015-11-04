@@ -22,7 +22,6 @@ public class CalculatorService implements CalculatorServiceLocal,
 		op.setResult(op.getVar1() + op.getVar2());
 		persistEntity(op);
 		mergeEntity(op);
-		System.out.println("====Created op: "+op);
 		return op.getResult();
 	}
 
@@ -33,18 +32,24 @@ public class CalculatorService implements CalculatorServiceLocal,
 		} else {
 			op.setResult(op.getVar1() / op.getVar2());
 		}
+		persistEntity(op);
+		mergeEntity(op);
 		return (op.getResult());
 	}
 
 	@Override
 	public double multiply(Operation op) {
 		op.setResult(op.getVar1() * op.getVar2());
+		persistEntity(op);
+		mergeEntity(op);
 		return (op.getResult());
 	}
 
 	@Override
 	public double subtract(Operation op) {
 		op.setResult(op.getVar1() - op.getVar2());
+		persistEntity(op);
+		mergeEntity(op);
 		return (op.getResult());
 	}
 
