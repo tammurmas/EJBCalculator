@@ -14,78 +14,80 @@ import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.tamm.ejbbean.CalculatorServiceLocal;
 import org.tamm.entities.Operation;
 import org.tamm.entities.OperationType;
 
 public class CalculatorPage extends WebPage {
-
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static OperationType selected = OperationType.ADD;
+	//private static OperationType selected = OperationType.ADD;
 
 	public CalculatorPage(final PageParameters parameters) {
 		super(parameters);
-    	add(new CalculatorForm("calculatorForm"));
-    }
-    
-    private static class CalculatorForm extends Form<Object>{
-    	/**
+		add(new CalculatorForm("calculatorForm"));
+	}
+
+	private static class CalculatorForm extends Form<Object> {
+		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
-		private TextField<String> varField1;
-    	private TextField<String> varField2;
-    	private Label valueLabel;
-    	private FeedbackPanel feedbackPanel;
-    	
-    	private DropDownChoice<OperationType> operations;
-    	
-    	public CalculatorForm(String id) {
-    		super(id);
-    			
-    		varField1 = new RequiredTextField<String>("varField1", Model.of(""));
-    		varField2 = new RequiredTextField<String>("varField2", Model.of(""));			
-    		valueLabel = new Label("valueLabel", Model.of(""));
-    		operations = new DropDownChoice<OperationType>("operations", new Model<OperationType>(selected), Arrays.asList(OperationType.values()));
-    		feedbackPanel = new FeedbackPanel("feedback");
-            
-    		add(feedbackPanel);
-    		add(varField1);
-    		add(varField2);
-    		add(valueLabel);
-    		add(operations);
-    	}
+		private static final long serialVersionUID = -8575117117127625602L;
+		
+		private FeedbackPanel feedbackPanel;
+		private Label resultLabel;
 
-    	public final void onSubmit() {
-    		double var1, var2;
-    		OperationType op_type;
-    		try
+		public CalculatorForm(String id) {
+			super(id);
+			Operation operation = new Operation();
+			setModel(new Model(operation));
+			
+			TextField<Double> varField1 = new RequiredTextField<Double>("varField1",
+					new PropertyModel<Double>(operation, "var1"));
+			
+			TextField<Double> varField2 = new RequiredTextField<Double>("varField2",
+					new PropertyModel<Double>(operation, "var2"));
+			
+			resultLabel = new Label("resultLabel",
+					new PropertyModel<Double>(operation, "result"));
+			
+			DropDownChoice<OperationType> types = new DropDownChoice<OperationType>(
+					"types",
+					new PropertyModel<OperationType>(operation, "type"),
+					Arrays.asList(OperationType.values()));
+
+			feedbackPanel = new FeedbackPanel("feedback");
+			
+			add(varField1);
+			add(varField2);
+			add(resultLabel);
+			add(types);
+			add(feedbackPanel);
+		}
+
+		public final void onSubmit() {
+			try
     		{
-    			var1 =  parseValue((String)varField1.getDefaultModelObject());
-    			var2 =  parseValue((String)varField2.getDefaultModelObject());
-    			op_type = (OperationType) operations.getDefaultModelObject();
-    			
-    			Operation op = new Operation(var1, var2, op_type);
-    			
-    			valueLabel.setDefaultModelObject("The result is: "+calculate(op));
+				Operation input = (Operation)getModelObject();
+				Operation output = new Operation(input.getVar1(), input.getVar2(), input.getType());
+				resultLabel.setDefaultModelObject(calculate(output));
     		}
-    		catch(NumberFormatException e)
-    		{
-    			e.printStackTrace();
-    			feedbackPanel.error("Variables have to be numeric values!");
-    		}
-    		catch(EJBException e)
+			catch(EJBException e)
     		{
     			feedbackPanel.error(e.getMessage());
     		}
-    	}
-    	
-    	private Number calculate(Operation op) throws EJBException
+		}
+		
+		private Double calculate(Operation op) throws EJBException
     	{
+			if(op.getType() == null)
+			{
+				throw new EJBException("Select operation's type!");
+			}
     		CalculatorServiceLocal calculator = lookupEJB();
     		switch (op.getType()) {
 			case ADD:
@@ -100,13 +102,8 @@ public class CalculatorPage extends WebPage {
 				return null;
 			}
     	}
-    	
-    	private double parseValue(String value) throws NumberFormatException
-    	{
-    		return Double.parseDouble(value);
-    	}
-    	
-    	private CalculatorServiceLocal lookupEJB()
+		
+		private CalculatorServiceLocal lookupEJB()
     	{
     		InitialContext ic;
     		CalculatorServiceLocal calculator = null;
@@ -120,6 +117,5 @@ public class CalculatorPage extends WebPage {
     		
     		return calculator;
     	}
-    }
-
+	}
 }

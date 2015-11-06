@@ -7,13 +7,14 @@
 <body>
 	<form id="calculatorForm" method="get" wicket:id="calculatorForm">
 	
-	<span wicket:id="feedback" style="color: red">feedbackmessages will be put here</span>
+	<span wicket:id="feedback" style="color: red">Feedback messages will be put here</span>
 	
 	<fieldset>
 	  <legend style="color: #F90">EJB Calculator</legend>
+	  The result is: <span wicket:id="resultLabel">The result gets displayed here</span><br/>
 	  <span >Var1: </span><input wicket:id="varField1" type="text" /><br/>
 	  <span >Var2: </span><input wicket:id="varField2" type="text" /><br/>
-	  <span >Operation: </span><select wicket:id="operations"></select>
+	  <span >Operation type: </span><select wicket:id="types"></select>
 	  <p>
 		<input type="submit" name="Submit" value="Submit"/>
 	  </p>

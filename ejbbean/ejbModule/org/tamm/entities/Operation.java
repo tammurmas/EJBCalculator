@@ -1,5 +1,7 @@
 package org.tamm.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,38 +14,42 @@ import javax.persistence.NamedQuery;
 @NamedQueries({
 @NamedQuery(name = "Operation.findAll",
 query = "select o from Operation o")})
-public class Operation {
+public class Operation implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1445407149813706793L;
 	@Id
 	@Column(nullable = false)
 	@GeneratedValue(strategy = GenerationType.TABLE,
-	generator = "Customer_ID_Generator")
+	generator = "Operation_ID_Generator")
 	private int id;
-	private double var1;
-	private double var2;
+	private Double var1;
+	private Double var2;
 	private OperationType type;
-	private double result;
+	private Double result;
 	
 	public Operation(){}
 	
-	public Operation(double v1, double v2, OperationType op){
+	public Operation(Double v1, Double v2, OperationType op){
 		var1 = v1;
 		var2 = v2;
 		type = op;
 	}
 
-	public double getVar1() {
+	public Double getVar1() {
 		return var1;
 	}
 
-	public void setVar1(double var1) {
+	public void setVar1(Double var1) {
 		this.var1 = var1;
 	}
 
-	public double getVar2() {
+	public Double getVar2() {
 		return var2;
 	}
 
-	public void setVar2(double var2) {
+	public void setVar2(Double var2) {
 		this.var2 = var2;
 	}
 
@@ -55,11 +61,11 @@ public class Operation {
 		this.type = type;
 	}
 
-	public double getResult() {
+	public Double getResult() {
 		return result;
 	}
 
-	public void setResult(double result) {
+	public void setResult(Double result) {
 		this.result = result;
 	}
 	
