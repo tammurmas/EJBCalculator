@@ -21,7 +21,7 @@ public class Operation implements Serializable {
 	private static final long serialVersionUID = 1445407149813706793L;
 	@Id
 	@Column(nullable = false)
-	@GeneratedValue(strategy = GenerationType.TABLE,
+	@GeneratedValue(strategy = GenerationType.SEQUENCE,
 	generator = "Operation_ID_Generator")
 	private int id;
 	private Double var1;

@@ -1,6 +1,7 @@
 package org.tamm.ejbclient;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
@@ -12,6 +13,8 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -25,7 +28,6 @@ public class CalculatorPage extends WebPage {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	//private static OperationType selected = OperationType.ADD;
 
 	public CalculatorPage(final PageParameters parameters) {
 		super(parameters);
@@ -37,9 +39,11 @@ public class CalculatorPage extends WebPage {
 		 * 
 		 */
 		private static final long serialVersionUID = -8575117117127625602L;
-		
 		private FeedbackPanel feedbackPanel;
 		private Label resultLabel;
+		
+		//create a list of operations from the db
+		private List<Operation> list = lookupEJB().findAll();
 
 		public CalculatorForm(String id) {
 			super(id);
@@ -67,29 +71,48 @@ public class CalculatorPage extends WebPage {
 			add(resultLabel);
 			add(types);
 			add(feedbackPanel);
+			
+			//table of all operations calculated so far
+			ListView<Operation> listView = new ListView<Operation>("listView", list)
+			{
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				protected void populateItem(ListItem<Operation> item)
+				{
+					Operation listViewOp = (Operation)item.getModelObject();
+					item.add(new Label("var1", listViewOp.getVar1()));
+					item.add(new Label("var2", listViewOp.getVar2()));
+					item.add(new Label("type", listViewOp.getType()));
+			        item.add(new Label("result", listViewOp.getResult()));
+				}
+			};
+			
+			add(listView);
 		}
 
 		public final void onSubmit() {
-			try
-    		{
-				Operation input = (Operation)getModelObject();
+			try {
+				Operation input = (Operation) getModelObject();
 				Operation output = new Operation(input.getVar1(), input.getVar2(), input.getType());
 				resultLabel.setDefaultModelObject(calculate(output));
-    		}
-			catch(EJBException e)
-    		{
-    			feedbackPanel.error(e.getMessage());
-    		}
+				
+				list.add(output);//add the the last operation to the list of all operations
+				
+			} catch (EJBException e) {
+				feedbackPanel.error(e.getMessage());
+			}
 		}
-		
-		private Double calculate(Operation op) throws EJBException
-    	{
-			if(op.getType() == null)
-			{
+
+		private Double calculate(Operation op) throws EJBException {
+			if (op.getType() == null) {
 				throw new EJBException("Select operation's type!");
 			}
-    		CalculatorServiceLocal calculator = lookupEJB();
-    		switch (op.getType()) {
+			CalculatorServiceLocal calculator = lookupEJB();
+			switch (op.getType()) {
 			case ADD:
 				return calculator.add(op);
 			case SUBTRACT:
@@ -101,21 +124,21 @@ public class CalculatorPage extends WebPage {
 			default:
 				return null;
 			}
-    	}
-		
-		private CalculatorServiceLocal lookupEJB()
-    	{
-    		InitialContext ic;
-    		CalculatorServiceLocal calculator = null;
-    		try {
-    			ic = new InitialContext();
-    			calculator = (CalculatorServiceLocal) ic.lookup("java:global/ejbear/ejbbean/CalculatorService!org.tamm.ejbbean.CalculatorServiceLocal");
-    		} catch (NamingException e) {
-    			// TODO Auto-generated catch block
-    			throw new EJBException(e.getMessage());
-    		}
-    		
-    		return calculator;
-    	}
+		}
+
+		private CalculatorServiceLocal lookupEJB() {
+			InitialContext ic;
+			CalculatorServiceLocal calculator = null;
+			try {
+				ic = new InitialContext();
+				calculator = (CalculatorServiceLocal) ic
+						.lookup("java:global/ejbear/ejbbean/CalculatorService!org.tamm.ejbbean.CalculatorServiceLocal");
+			} catch (NamingException e) {
+				// TODO Auto-generated catch block
+				throw new EJBException(e.getMessage());
+			}
+
+			return calculator;
+		}
 	}
 }

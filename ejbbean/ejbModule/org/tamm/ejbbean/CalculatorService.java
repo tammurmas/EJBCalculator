@@ -1,5 +1,7 @@
 package org.tamm.ejbbean;
 
+import java.util.List;
+
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -60,6 +62,10 @@ public class CalculatorService implements CalculatorServiceLocal,
 
 	private <T> T mergeEntity(T entity) {
 		return em.merge(entity);
+	}
+
+	public List<Operation> findAll() {
+		return em.createNamedQuery("Operation.findAll", Operation.class).getResultList();
 	}
 
 }
