@@ -64,8 +64,15 @@ public class CalculatorService implements CalculatorServiceLocal,
 		return em.merge(entity);
 	}
 
+	@Override
 	public List<Operation> findAll() {
 		return em.createNamedQuery("Operation.findAll", Operation.class).getResultList();
+	}
+	
+	@Override
+	public void deleteAll()
+	{
+		em.createNamedQuery("Operation.deleteAll", Operation.class).executeUpdate();
 	}
 
 }

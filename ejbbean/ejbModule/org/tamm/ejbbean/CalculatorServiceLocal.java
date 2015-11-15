@@ -15,5 +15,6 @@ public interface CalculatorServiceLocal {
     public double multiply(Operation op);
     public double divide(Operation op) throws EJBException;
 	public List<Operation> findAll();
+	void deleteAll();
     
 }

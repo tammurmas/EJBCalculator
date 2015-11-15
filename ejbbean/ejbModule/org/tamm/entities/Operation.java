@@ -13,7 +13,9 @@ import javax.persistence.NamedQuery;
 @Entity
 @NamedQueries({
 @NamedQuery(name = "Operation.findAll",
-query = "select o from Operation o")})
+query = "select o from Operation o"),
+@NamedQuery(name = "Operation.deleteAll",
+query = "delete from Operation o")})
 public class Operation implements Serializable {
 	/**
 	 * 
