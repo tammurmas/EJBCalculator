@@ -9,6 +9,7 @@ import javax.naming.NamingException;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.ajax.markup.html.navigation.paging.AjaxPagingNavigator;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -18,6 +19,8 @@ import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.list.PageableListView;
+import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -80,7 +83,7 @@ public class CalculatorPage extends WebPage {
 			add(feedbackPanel);
 			
 			//table of all operations calculated so far
-			ListView<Operation> listView = new ListView<Operation>("listView", list)
+			PageableListView<Operation> listView = new PageableListView<Operation>("listView", list, 5)
 			{
 				private static final long serialVersionUID = 1L;
 
@@ -94,10 +97,14 @@ public class CalculatorPage extends WebPage {
 			        item.add(new Label("result", listViewOp.getResult()));
 				}
 			};
+			AjaxPagingNavigator navigator = new AjaxPagingNavigator("navigator", listView);
+			navigator.setOutputMarkupId(true);
+			add(navigator);
 			
 			WebMarkupContainer listContainer = new WebMarkupContainer("theContainer");
 	        listContainer.setOutputMarkupId(true);
 	        listContainer.add(listView);
+	        
 	        add(listContainer);
 	        
 	        AjaxButton ab=new AjaxButton("submit") {
@@ -116,6 +123,7 @@ public class CalculatorPage extends WebPage {
 	        				target.add(listContainer);
 	        				target.add(resultLabel);//update the result label
 	        				target.add(feedbackPanel);//clear the feedback panel of previous errors 
+	        				target.add(navigator);//update the navigator
 	        			} catch (EJBException e) {
 	        				feedbackPanel.error(e.getMessage());
 	        				onError(target, form);
