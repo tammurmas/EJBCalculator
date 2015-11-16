@@ -1,7 +1,5 @@
 package org.tamm.entities;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,11 +14,8 @@ import javax.persistence.NamedQuery;
 query = "select o from Operation o"),
 @NamedQuery(name = "Operation.deleteAll",
 query = "delete from Operation o")})
-public class Operation implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1445407149813706793L;
+public class Operation {
+	
 	@Id
 	@Column(nullable = false)
 	@GeneratedValue(strategy = GenerationType.SEQUENCE,

@@ -16,14 +16,12 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.PageableListView;
-import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.tamm.ejbbean.CalculatorServiceLocal;
 import org.tamm.entities.Operation;
@@ -46,18 +44,23 @@ public class CalculatorPage extends WebPage {
 		private List<Operation> list = lookupEJB().findAll();
 
 		public CalculatorForm(String id) {
-			super(id);
-			lookupEJB().deleteAll();//clear database
-			Operation operation = new Operation();
-			setModel(new Model(operation));
+			//by using model nesting we do not have to make operation serializable
+			super(id, new CompoundPropertyModel<Object>(new LoadableDetachableModel<Operation>() {
+
+				private static final long serialVersionUID = -4927172420790011314L;
+
+				@Override 
+			    protected Operation load() { 
+			        return new Operation(); 
+			    }
+
+			}));
 			
-			TextField<Double> varField1 = new RequiredTextField<Double>("varField1",
-					new PropertyModel<Double>(operation, "var1"));
-			add(varField1);
+			lookupEJB().deleteAll();//to occasionally clear the database
+			list = lookupEJB().findAll();//retrieve all records
 			
-			TextField<Double> varField2 = new RequiredTextField<Double>("varField2",
-					new PropertyModel<Double>(operation, "var2"));
-			add(varField2);
+			add(new RequiredTextField<Double>("var1"));
+			add(new RequiredTextField<Double>("var2"));
 			
 			//model for updating the result label
 			Model<Double> resultModel = new Model<Double>() {
@@ -72,11 +75,9 @@ public class CalculatorPage extends WebPage {
 	        resultLabel.setOutputMarkupId(true);
 	        add(resultLabel);
 			
-			DropDownChoice<OperationType> types = new DropDownChoice<OperationType>(
-					"types",
-					new PropertyModel<OperationType>(operation, "type"),
-					Arrays.asList(OperationType.values()));
-			add(types);
+			add(new DropDownChoice<OperationType>("type",
+					Arrays.asList(OperationType.values())));
+			
 
 			final FeedbackPanel feedbackPanel = new FeedbackPanel("feedback");
 			feedbackPanel.setOutputMarkupId(true);
@@ -116,6 +117,7 @@ public class CalculatorPage extends WebPage {
 	                {
 	                	try {
 	                		Operation input = (Operation) form.getModelObject();
+	                		System.out.println(input);
 	                		Operation output = new Operation(input.getVar1(), input.getVar2(), input.getType());
 	        				result = calculate(output);
 	        				
